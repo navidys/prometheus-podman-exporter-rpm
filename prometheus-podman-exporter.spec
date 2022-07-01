@@ -9,8 +9,8 @@
 %endif
 
 %global goipath github.com/containers/prometheus-podman-exporter
-Version: 0.4.0
-%global tag v0.4.0
+Version: 1.0.0
+%global tag v1.0.0
 %gometa
 
 %global goname prometheus-podman-exporter
@@ -199,7 +199,7 @@ popd
 %{__install} -dp %{buildroot}%{_bindir}
 %{__install} -dp %{buildroot}%{_unitdir}
 %{__install} -dp %{buildroot}%{_userunitdir}
-%{__install} -p ./bin/%{name} %{buildroot}%{_bindir}
+%{__install} -p %{gobuilddir}/bin/%{name} %{buildroot}%{_bindir}
 %{__install} -Dpm0644 ./contrib/systemd/%{name}.service %{buildroot}%{_unitdir}/%{name}.service
 %{__install} -Dpm0644 ./contrib/systemd/%{name}.service %{buildroot}%{_userunitdir}/%{name}.service
 
@@ -215,6 +215,14 @@ pushd %{buildroot}%{_bindir}
 ln -s %{name} %{shortname}
 popd
 
+%post
+%systemd_user_post %{name}.service
+%systemd_post %{name}.service
+
+%preun
+%systemd_user_preun %{name}.service
+%systemd_preun %{name}.service
+
 %if 0%{?with_check}
 %check
 %gocheck
@@ -223,7 +231,12 @@ popd
 %files
 %license %{golicenses}
 %doc     
-%{_bindir}/*
+%{_bindir}/%{goname}
+%{_bindir}/%{shortname}
+%{_unitdir}/%{name}.service
+%{_unitdir}/%{shortname}.service
+%{_userunitdir}/%{name}.service
+%{_userunitdir}/%{shortname}.service
 
 %changelog
 %autochangelog
